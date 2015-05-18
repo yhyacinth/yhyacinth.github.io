@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Hello Github.io
+date: 2015-5-7
+tags: tag1
 ---
 
 What a beautiful day!
