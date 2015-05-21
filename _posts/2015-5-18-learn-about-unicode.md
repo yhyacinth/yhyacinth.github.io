@@ -95,6 +95,7 @@ UTF-8 인코딩은 유니코드 한 문자를 나타내기 위해 1바이트에�
 
 ![pic](http://unicode.org/reports/tr15/Slide4.JPG "Slide4")
 
+
 ## BOM
 바이트 순서 표식(Byte Order Mark, BOM)은 유니코드에서 엔디언을 구별하기 위해 사용되는 문자로, 문자 값은 U+FEFF 이다.
 
