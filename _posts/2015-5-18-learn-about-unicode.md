@@ -90,11 +90,34 @@ UTF-8 인코딩은 유니코드 한 문자를 나타내기 위해 1바이트에�
 위 패턴을 사용하면 더 큰 코드 범위를 표시할 수도 있다. 원래 UTF-8은 6바이트까지의 코드 범위를 표현할 수 있었으나 2003년 11월 RFC 3629에서 유니코드에서 실제로 정의하는 U+10FFFF 까지의 글자만 표시할 수 있도록 제한하였다.
 
 ## 유니코드 정규화
+### 개요
+유니코드는 미리 합쳐진(precomposed) 문자와 따로 결합하는(combining) 문자가 공존하고 있다(예: 한글 자모 영역 [ㅎㅏㄴ]과 한글 음절 영역 [한]). 이들을 적절한 방법으로 __정규화__하지 않으면 작은 버그부터 시작해서 보안 문제까지 이어질 수 있다.
 
-![pic](http://unicode.org/reports/tr15/Slide3.JPG "Slide3")
+건조한 레퍼런스 http://www.unicode.org/reports/tr15/
 
-![pic](http://unicode.org/reports/tr15/Slide4.JPG "Slide4")
+### 정규화 형태 Normalization Forms (NF)
+| Form | Description |
+| ---- | ---- |
+| Normalization Form D (NFD) | Canonical Decomposition |
+| Normalization Form C (NFC) | Canonical Decomposition, followed by Canonical Composition |
+| Normalization Form KD (NFKD) | Compatibility Decomposition |
+| Normalization Form KC (NFKC) |Compatibility Decomposition, followed by Canonical Composition |
 
+<br />
+<br />
+요약
+
+
+1. NFD, NFKD를 거쳐서 최대한 분해한다.
+2. 가능한 모든 비결합 문자와 뒤에 따라 오는 결합 문자, 그리고 그 뒤에 따라오는 비결합 문자에 대해 순서대로 결합을 시도한다.
+3. 결합이 성공하면 뒤의 문자는 지우고 앞의 문자를 결합된 문자로 바꾼다. 이전에 실패한 결합은 다시 시도하지 않는다.
+4. 결합을 시도할 때는 일반 분해 매핑의 역변환만 시도한다(예외도 있다.).
+
+<!-- ![pic](http://unicode.org/reports/tr15/Slide3.JPG "Slide3")
+
+; ![pic](http://unicode.org/reports/tr15/Slide4.JPG "Slide4")-->
+
+### 각 언어의 정규화 방법
 
 ## BOM
 바이트 순서 표식(Byte Order Mark, BOM)은 유니코드에서 엔디언을 구별하기 위해 사용되는 문자로, 문자 값은 U+FEFF 이다.
