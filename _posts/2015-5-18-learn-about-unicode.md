@@ -23,6 +23,14 @@ _이 문서를 주의 깊게 읽으면 유니코드에 대한 이해를 크게 �
 모든 문자들의 코드 값은 문자 코드표에서 확인할 수 있다.
 http://www.unicode.org/charts/ 
 
+### 버전
+ - Unicode 1.0.0 - 1991년 10월
+ - ...
+ - Unicode 6.0 - 2010년 10월 11일
+ - Unicode 6.1 - 2012년 2월 1일
+ - Unicode 6.2 - 2012년 9월 27일
+ - Unicode 6.3 - 2013년 9월 30일
+ - Unicode 7.0 - 2014년 6월 16일
 
 ### 유니코드의 인코딩 방식들
 유니코드의 표현 방식은 유니코드 컨소시엄과 ISO 10646에 정의되어 있다. 대표적인 인코딩 방식은 UCS-2, UTF-16, UTF-8이 있다.
@@ -91,33 +99,147 @@ UTF-8 인코딩은 유니코드 한 문자를 나타내기 위해 1바이트에�
 
 ## 유니코드 정규화
 ### 개요
-유니코드는 미리 합쳐진(precomposed) 문자와 따로 결합하는(combining) 문자가 공존하고 있다(예: 한글 자모 영역 [ㅎㅏㄴ]과 한글 음절 영역 [한]). 이들을 적절한 방법으로 __정규화__하지 않으면 작은 버그부터 시작해서 보안 문제까지 이어질 수 있다.
+유니코드 정규화(Unicode normalization 또는 Unicode equivalence)는 모양이 같은 문자가 여러 개 있을 경우, 이를 기준에 따라 하나로 통합해주는 일을 가리킨다. 예를 들어 유니코드는 미리 합쳐진(precomposed) 문자와 따로 결합하는(combining) 문자가 공존하고 있다(예: 한글 자모 영역 [ㅎㅏㄴ]과 한글 음절 영역 [한]). 그리고 각 나라 마다 같은 한자에 다른 코드 값을 가지고 있다(한국어 亮 U+F977, CJKV 통합 한자 亮 U+4EAE). 이들을 적절한 방법으로 정규화하지 않으면 여러가지 문제가 생겨날 수 있다.
 
-건조한 레퍼런스 http://www.unicode.org/reports/tr15/
+유니코드 정규화에 대한 건조한 레퍼런스 http://www.unicode.org/reports/tr15/
 
 ### 정규화 형태 Normalization Forms (NF)
 | Form | Description |
 | ---- | ---- |
-| Normalization Form D (NFD) | Canonical Decomposition |
-| Normalization Form C (NFC) | Canonical Decomposition, followed by Canonical Composition |
-| Normalization Form KD (NFKD) | Compatibility Decomposition |
-| Normalization Form KC (NFKC) |Compatibility Decomposition, followed by Canonical Composition |
+| Normalization Form D (NFD) | 정준 분해 Canonical Decomposition |
+| Normalization Form C (NFC) | 정준 분해한 뒤에, 다시 정준 결합 Canonical Decomposition, followed by Canonical Composition |
+| Normalization Form KD (NFKD) | 호환 분해 Compatibility Decomposition |
+| Normalization Form KC (NFKC) | 호환 분해한 뒤, 다시 정준 결합 Compatibility Decomposition, followed by Canonical Composition |
 
-<br />
-<br />
-요약
+#### NFD
+코드를 정준 분해한다.
 
+ * 발음 구별 기호가 붙은 글자가 하나로 처리되어 있을 경우, 이를 기호별로 나눈다.
+ * 한글을 한글 음절 영역(U+AC00~U+D7A3)으로 썼을 경우, 이를 첫가끝 코드로 나눈다.
+ * 표준과 다른 조합 순서를 제대로 정렬한다.
+
+예)
+
+ * À (U+00C0) → A (U+0041) + ̀ (U+0300)
+ * 위 (U+C704) → (U+110B) + (U+1171)
+
+#### NFC
+코드를 정준 분해한 뒤에, 다시 정준 결합한다.
+
+ * 발음 구별 기호가 붙었을 경우, 이를 코드 하나로 처리한다.
+ * 한글을 첫가끝 코드로 썼을 경우, 이를 한글 음절 영역(U+AC00~U+D7A3)으로 처리한다.
+
+예)
+
+ * A (U+0041) + ̀ (U+0300) → À (U+00C0)
+ * ᄋ (U+110B) + ᅱ (U+1171) → 위 (U+C704)
+
+#### NFKD
+코드를 호환 분해한다.
+
+ * 합자 처리된 알파벳 코드를 각 알파벳으로 분해한다.
+ * 옛 알파벳을 현대 알파벳으로 바꾼다.
+ 
+예)
+
+ * ﬁ (U+FB01) → f (U+0066) + i (U+0069)
+
+#### NFKC
+코드를 호환 분해한 뒤에 다시 정준 결합한다.
+
+ * 발음 구별 기호가 있는 옛 알파벳을 현대 알파벳으로 바꾼다.
+
+예)
+
+ * ẛ (U+1E9B) → ṡ (U+1E61)
+ 
+#### 모든 기준에서 공통된 정규화 처리
+* 한중일 호환 한자를 한중일월 통합 한자로 처리한다.
+* 전용 기호를 모양이 같은 보편적인 기호로 바꾼다.
+
+예)
+
+ * 樂 (U+F914), 樂 (U+F95C), 樂 (U+F9BF) → 樂 (U+6A02)
+ * Ω (U+2126, 옴) → Ω (U+03A9, 오메가)
+
+#### 요약
 
 1. NFD, NFKD를 거쳐서 최대한 분해한다.
 2. 가능한 모든 비결합 문자와 뒤에 따라 오는 결합 문자, 그리고 그 뒤에 따라오는 비결합 문자에 대해 순서대로 결합을 시도한다.
 3. 결합이 성공하면 뒤의 문자는 지우고 앞의 문자를 결합된 문자로 바꾼다. 이전에 실패한 결합은 다시 시도하지 않는다.
 4. 결합을 시도할 때는 일반 분해 매핑의 역변환만 시도한다(예외도 있다.).
 
-<!-- ![pic](http://unicode.org/reports/tr15/Slide3.JPG "Slide3")
-
-; ![pic](http://unicode.org/reports/tr15/Slide4.JPG "Slide4")-->
-
 ### 각 언어의 정규화 방법
+#### Java
+    import java.text.Normalizer;
+    public class NormalizerTest {
+        public static void main(String args[]) {
+            String ui = "위";
+            String nfd = Normalizer.normalize(ui, Normalizer.Form.NFD);
+            String nfc = Normalizer.normalize(nfc, Normalizer.Form.NFC);
+        }
+    }
+    
+    => ui = U+C704
+    => nfd = U+110B + U+1171
+    => nfc = U+C704
+    
+#### Perl
+    #!/usr/bin/perl
+    use utf8;
+    use Unicode::Normalize;
+    
+    my $ui = "위";
+    my $nfd = NFD("위");
+    my $nfc = NFC($nfd);
+    
+#### C#&nbsp;
+    using System;
+    using System.Text;
+    
+    string s1 = new String( new char[] { '\uC704' }
+    string s2 = null;
+    
+    s1.IsNormalized();
+    s1.IsNormalized(NormalizationForm.FormD));
+    // False
+    // False
+    
+    // Normalize to the default form(Form C)
+    s2 = s1.Normalize();
+    s2.IsNormalized(); // True
+    
+    // Normalize to Form D
+    s2 = s1.Normalize(NormalizationForm.FormD);
+    s2.IsNormalized(NormalizationForm.FormD)); // True
+    
+#### C++
+    const int maxIterations = 10;
+    LPWSTR strInput = L"위";
+    LPWSTR strResult = NULL;
+    HANDLE hHeap = GetProcessHeap();
+
+    int iSizeEstimated = NormalizeString(NormalizationD, strInput, -1, NULL, 0);
+    for (int i = 0; i < maxIterations; i++)
+    {
+        if (strResult)
+            HeapFree(hHeap, 0, strResult);
+        strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof (WCHAR));
+        iSizeEstimated = NormalizeString(NormalizationD, strInput, -1, strResult, iSizeEstimated);
+ 
+        if (iSizeEstimated > 0)
+            break; // success 
+    }    
+    TRACE(L"%x", strInput[0]);
+    TRACE(L"%x", strResult[0]);
+    TRACE(L"%x", strResult[1]);
+    
+    => strInput = U+C704
+    => strResult = U+110B + U+1171
+    
+Windows Vista >= only
+https://msdn.microsoft.com/en-us/library/windows/desktop/dd319093(v=vs.85).aspx
+
 
 ## BOM
 바이트 순서 표식(Byte Order Mark, BOM)은 유니코드에서 엔디언을 구별하기 위해 사용되는 문자로, 문자 값은 U+FEFF 이다.
@@ -148,3 +270,4 @@ BOM Table
 - http://ko.wikipedia.org/wiki/UTF-16
 - http://ko.wikipedia.org/wiki/바이트_순서_표식
 - http://heyjimin.tistory.com/15
+- https://msdn.microsoft.com/en-us/library/windows/desktop/dd374126(v=vs.85).aspx Using Unicode Normalization to Represent Strings
