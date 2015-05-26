@@ -20,7 +20,7 @@ __boustrophedonically__: 한 방향(수평)으로 시작해서 줄의 끝에 이
 
 그리스 알파벳은 점차 LTR 패턴이 정착하게 되었다. 한 편, 아랍어와 히브리어는 RTL을 사용하게 되었다.
 
-![pic](http://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Writing_directions_of_the_world.svg/800px-Writing_directions_of_the_world.svg.png "Wikipedia")
+![pic](../../../../images/150521/800px-Writing_directions_of_the_world.svg.png "Wikipedia")
 
 <출처: 위키백과, 세계의 텍스트 방향성>
 
