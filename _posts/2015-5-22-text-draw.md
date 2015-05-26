@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 프로그램 텍스트 출력 방법들
+title: 프로그램의 텍스트 출력 방법들
 categories: [general]
 tags: [text, library]
 description: 몇 가지 많이 사용하는 텍스트 렌더링, 레이아웃 라이브러리가 있다.
@@ -108,18 +108,105 @@ NEWTEXTMETRIC은 물리적 폰트 정보를 정의한다.
       UINT  ntmAvgWidth;
     } NEWTEXTMETRIC, *PNEWTEXTMETRIC;
     
-### 차이
+### 각각의 차이
 TEXTMETRIC은 폰트의 물리적인 정보를 가지고 있다. LOGFONT는 논리적인 정보를 가지고 있다. LOGFONT의 거의 모든 멤버를 TEXTMETRIC은 포함하고 있으며 TEXTMETRIC의 멤버와 기능이 LOGFONT보다 훨씬 많아 세세한 걸 다룰 수 있다. 간단한 제어를 할 때는 보통 LOGFONT를 사용하지만 세밀한 제어를 요구하면 TEXTMETRIC을 사용한다. TEXTMETRIC은 non-TrueType 폰트를 위한 구조체고 NEWTEXTMETRIC은 TrueType 폰트를 위한 구조체이다. NEWTEXTMETRIC은 TEXTMETRIC에서 네 가지 필드가 추가되었다.
 
 ## 텍스트 렌더 라이브러리
-텍스트 렌더 라이브러리는 Win32 API TextOut으로 출력한 것과 효과는 유사하지만 출력 과정은 많이 다르다. 렌더 라이브러리는 폰트 파일을 뒤져 글자 모양을 찾고 외곽선을 추출한다. 그리고 해상도를 고려한 확대 배율을 적용하여 비트맵으로 바꾼 후 화면에 출력한 것이다. 안티 앨리어싱도 적용하여 배경과 글자가 부드럽게 조화를 이룬다. 텍스트에서 글리프 인덱스와 위치 포지션들의 집합으로 변환하는 것은 매우 어려운 작업이고 최선의 방법은 외부 라이브러리를 사용하는 것이다.
+텍스트 렌더 라이브러리는 Win32 API TextOut으로 출력한 것과 효과는 유사하지만 출력 과정은 많이 다르다. 렌더 라이브러리는 폰트 파일을 뒤져 글자 모양을 찾고 글리프를 추출한다. 그리고 해상도를 고려한 확대 배율을 적용하여 래스터 이미지로 바꾼 후 화면에 출력한 것이다. 안티 앨리어싱도 적용하여 배경과 글자가 부드럽게 조화를 이룬다. 텍스트에서 글리프 인덱스와 위치 포지션들의 집합으로 변환하는 것은 매우 어려운 작업이고 최선의 방법은 외부 라이브러리를 사용하는 것이다.
 
 ### FreeType
 - http://freetype.org/ 
 - 트루 타입, 오픈 타입, Type 1 등 다양한 폰트 파일로부터 글리프 정보를 추출하는 저수준의 폰트 분석 라이브러리
-- 공개된 라이브러리이며 현재 최신 버전은 2.5.5 (2014-12-30)
+- 오픈 소스 라이브러리이며 현재 최신 버전은 2.5.5 (2014-12-30)
+- 안드로이드의 2D 그래픽 라이브러리 Skia의 텍스트 렌더링은 FreeType을 추상화하여 제공한다.
 
-http://www.soen.kr/lecture/library/freetype/freetype.htm
+<!-- http://www.soen.kr/lecture/library/freetype/freetype.htm -->
+<!-- http://www.freetype.org/freetype2/docs/tutorial/step1.html -->
+#### 간단 텍스트 렌더링 예제
+##### 1) FreeType API 헤더 포함
+
+    #include <ft2build.h>
+    #include FT_FREETYPE_H
+
+##### 2) 라이브러리 초기화
+
+    FT_Library  library;
+    
+    ...
+    
+    error = FT_Init_FreeType( &library );
+    if ( error )
+    {
+      ... an error occurred during library initialization ...
+    }
+
+##### 3) 폰트 페이스 로딩
+
+a. 폰트 파일로부터
+(생략)
+
+b. 메모리로부터
+(생략)
+
+4) 글리프 이미지 로딩
+
+a. 글리프 인덱스로부터 문자 코드 변환
+
+    glyph_index = FT_Get_Char_Index( face, charcode );
+    
+b. 페이스로부터 글리프 로딩
+
+    error = FT_Load_Glyph(
+          face,          /* handle to face object */
+          glyph_index,   /* glyph index           */
+          load_flags );  /* load flags, see below */
+          
+c. 다른 캐릭터맵 사용
+(생략)
+
+d. 글리프 변형
+(생략)
+
+##### 4) 기본적인 텍스트 렌더링
+
+    FT_GlyphSlot  slot = face->glyph;  /* a small shortcut */
+    int           pen_x, pen_y, n;
+
+
+    ... initialize library ...
+    ... create face object ...
+    ... set character size ...
+
+    pen_x = 300;
+    pen_y = 200;
+
+    for ( n = 0; n < num_chars; n++ )
+    {
+      FT_UInt  glyph_index;
+
+
+      /* retrieve glyph index from character code */
+      glyph_index = FT_Get_Char_Index( face, text[n] );
+
+      /* load glyph image into the slot (erase previous one) */
+      error = FT_Load_Glyph( face, glyph_index, FT_LOAD_DEFAULT );
+      if ( error )
+        continue;  /* ignore errors */
+
+      /* convert to an anti-aliased bitmap */
+      error = FT_Render_Glyph( face->glyph, FT_RENDER_MODE_NORMAL );
+      if ( error )
+        continue;
+
+      /* now, draw to our target surface */
+      my_draw_bitmap( &slot->bitmap,
+                      pen_x + slot->bitmap_left,
+                      pen_y - slot->bitmap_top );
+
+      /* increment pen position */
+      pen_x += slot->advance.x >> 6;
+      pen_y += slot->advance.y >> 6; /* not useful for now */
+    }
 
 ### Pango
 - http://www.pango.org/
@@ -130,3 +217,61 @@ http://www.soen.kr/lecture/library/freetype/freetype.htm
 - http://cairographics.org/
 - 벡터 그래픽 라이브러리
 - 텍스트 처리는 내부적으로 Pango를 사용한다.
+
+#### 간단 텍스트 렌더링 예제
+##### 1) 헤더 포함
+
+    #include <pango/pangocairo.h>
+    
+##### 2) RAW 데이터 서피스 Cairo 컨텍스트 생성
+
+    *buffer = calloc (channels * width * height, sizeof (unsigned char));
+    *surf = cairo_image_surface_create_for_data (*buffer,
+                                                 CAIRO_FORMAT_ARGB32,
+                                                 width,
+                                                 height,
+                                                 channels * width);
+    cairo_create (*surf);
+    
+##### 3) PangoLayout을 위한 Cairo 컨텍스트 생성
+
+    cairo_surface_t *temp_surface;
+    cairo_t *context;
+
+    temp_surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 0, 0);
+    context = cairo_create (temp_surface);
+    cairo_surface_destroy (temp_surface);
+    
+##### 4) PangoLayout 생성. 폰트와 텍스트 설정
+
+    /* Create a PangoLayout, set the font and text */
+    layout = pango_cairo_create_layout (layout_context);
+    pango_layout_set_text (layout, text, -1);
+
+    /* Load the font */
+    desc = pango_font_description_from_string (FONT);
+    pango_layout_set_font_description (layout, desc);
+    pango_font_description_free (desc);
+
+##### 5) 텍스트 렌더링
+
+    /* Get text dimensions and create a context to render to */
+    get_text_size (layout, text_width, text_height);
+    render_context = create_cairo_context (*text_width,
+                                           *text_height,
+                                           4,
+                                           &surface,
+                                           &surface_data);
+
+    /* Render */
+    cairo_set_source_rgba (render_context, 1, 1, 1, 1);
+    pango_cairo_show_layout (render_context, layout);
+    *texture_id = create_texture(*text_width, *text_height, surface_data);
+
+    /* Clean up */
+    free (surface_data);
+    g_object_unref (layout);
+    cairo_destroy (layout_context);
+    cairo_destroy (render_context);
+    cairo_surface_destroy (surface);
+
