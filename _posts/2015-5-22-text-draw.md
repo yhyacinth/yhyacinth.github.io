@@ -8,7 +8,7 @@ description: 몇 가지 많이 사용하는 텍스트 렌더링, 레이아웃 �
 
 ## Win32 API
 ### LOGFONT structure
-LOGFONT는 논리적 폰트의 특성을 정의한다.
+LOGFONT는 논리적 폰트 특성을 정의한다.
 
     typedef struct tagLOGFONT {
       LONG  lfHeight;
@@ -109,7 +109,7 @@ NEWTEXTMETRIC은 물리적 폰트 정보를 정의한다.
     } NEWTEXTMETRIC, *PNEWTEXTMETRIC;
     
 ### 각각의 차이
-TEXTMETRIC은 폰트의 물리적인 정보를 가지고 있다. LOGFONT는 논리적인 정보를 가지고 있다. LOGFONT의 거의 모든 멤버를 TEXTMETRIC은 포함하고 있으며 TEXTMETRIC의 멤버와 기능이 LOGFONT보다 훨씬 많아 세세한 걸 다룰 수 있다. 간단한 제어를 할 때는 보통 LOGFONT를 사용하지만 세밀한 제어를 요구하면 TEXTMETRIC을 사용한다. TEXTMETRIC은 non-TrueType 폰트를 위한 구조체고 NEWTEXTMETRIC은 TrueType 폰트를 위한 구조체이다. NEWTEXTMETRIC은 TEXTMETRIC에서 네 가지 필드가 추가되었다.
+LOGFONT의 거의 모든 멤버를 TEXTMETRIC은 포함하고 있으며 TEXTMETRIC의 멤버와 기능이 LOGFONT보다 훨씬 많아 세세한 걸 다룰 수 있다. 간단한 제어를 할 때는 보통 LOGFONT를 사용하지만 세밀한 제어를 요구하면 TEXTMETRIC을 사용한다. TEXTMETRIC은 non-TrueType 폰트를 위한 구조체고 NEWTEXTMETRIC은 TrueType 폰트를 위한 구조체이다. NEWTEXTMETRIC은 TEXTMETRIC에서 네 가지 필드가 추가되었다.
 
 ## 텍스트 렌더 라이브러리
 텍스트 렌더 라이브러리는 Win32 API TextOut으로 출력한 것과 효과는 유사하지만 출력 과정은 많이 다르다. 렌더 라이브러리는 폰트 파일을 뒤져 글자 모양을 찾고 글리프를 추출한다. 그리고 해상도를 고려한 확대 배율을 적용하여 래스터 이미지로 바꾼 후 화면에 출력한 것이다. 안티 앨리어싱도 적용하여 배경과 글자가 부드럽게 조화를 이룬다. 텍스트에서 글리프 인덱스와 위치 포지션들의 집합으로 변환하는 것은 매우 어려운 작업이고 최선의 방법은 외부 라이브러리를 사용하는 것이다.
