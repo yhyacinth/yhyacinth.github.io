@@ -219,6 +219,7 @@ d. 글리프 변형
 - 텍스트 처리는 내부적으로 Pango를 사용한다.
 
 #### 간단 텍스트 렌더링 예제
+<!-- http://dthompson.us/font-rendering-in-opengl-with-pango-and-cairo.html -->
 ##### 1) 헤더 포함
 
     #include <pango/pangocairo.h>
